@@ -45,8 +45,6 @@
                                 <span class="tooltipp">Add to wishlist</span>
                             </a>
                         </li>
-                        <li><a href="#"><i class="fa fa-exchange"></i> add to compare</a></li>
-
                     </ul>
 
 

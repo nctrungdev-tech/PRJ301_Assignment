@@ -91,7 +91,9 @@
                                         <c:forEach items="${cartWish.items}" var="item">
                                             <div class="product-widget">
                                                 <div class="product-img">
-                                                    <img src="<c:url value='${item.product.imageURL}' />" alt="">
+<img src="${pageContext.request.contextPath}/${item.product.imageURL}"
+     alt="${item.product.name}"
+     style="width: 80px; height: 80px; object-fit: contain;">
 
                                                 </div>
                                                 <div class="product-body">
@@ -120,7 +122,9 @@
                                         <c:forEach items="${cart.items}" var="item">
                                             <div class="product-widget">
                                                 <div class="product-img">
-                                                    <img src="<c:url value='${item.product.imageURL}' />" alt="">
+<img src="${pageContext.request.contextPath}/${item.product.imageURL}"
+     alt="${item.product.name}"
+     style="width: 80px; height: 80px; object-fit: contain;">
 
                                                 </div>
                                                 <div class="product-body">
@@ -178,7 +182,6 @@
                     <a href="<c:url value='/index.jsp'/>">Home</a>
                 </li>
                 <li><a href="<c:url value='/product/store.do'/>">Store</a></li>
-                <li><a href="<c:url value='/product/hotDeals.do'/>">Hot Deals</a></li>
                 <li class="">
                     <a href="<c:url value='/product/category.do?categoryId=1'/>">Laptops</a>
                 </li>

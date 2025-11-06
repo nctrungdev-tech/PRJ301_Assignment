@@ -5,11 +5,10 @@
 <div class="container mt-5">
     <div class="row">
         <div class="col-md-6">
-<<<<<<< HEAD
-            <img src="<c:url value='${product.imageURL}'/>" alt="${product.name}" class="img-fluid rounded shadow">
-=======
-<img src="<c:url value='/${product.imageURL}'/>" alt="${product.name}">
->>>>>>> recovery
+<img src="${pageContext.request.contextPath}/${product.imageURL}" 
+     alt="${product.name}" 
+     style="width: 100%; height: 300px; object-fit: contain;">
+
         </div>
         <div class="col-md-6">
             <h2>${product.name}</h2>

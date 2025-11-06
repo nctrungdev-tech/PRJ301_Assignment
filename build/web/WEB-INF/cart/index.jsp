@@ -135,7 +135,10 @@
         <c:forEach items="${cart.items}" var="item" varStatus="loop">
             <tr>
                 <td>${loop.index + 1}</td>
-                <td><img src="<c:url value="${item.product.imageURL}"/>" height="100px" width="150px"/></td>
+                <td><img src="${pageContext.request.contextPath}/${product.imageURL}" 
+     alt="${product.name}" 
+     style="width: 100%; height: 300px; object-fit: contain;">
+</td>
                 <td>${item.id}</td>
                 <td>${item.product.name}</td>
                 <td style="text-align: right;">

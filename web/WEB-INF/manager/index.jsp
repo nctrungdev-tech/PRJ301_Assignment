@@ -107,7 +107,10 @@
         <c:forEach items="${list}" var="product" varStatus="loop">
             <tr>
                 <td>${loop.index + 1}</td>
-                <td><img src="<c:url value='${product.imageURL}'/>" height="100px" width="150px"/></td>
+                <td><img src="${pageContext.request.contextPath}/${product.imageURL}" 
+     alt="${product.name}" 
+     style="width: 100%; height: 300px; object-fit: contain;">
+</td>
                 <td>${product.productID}</td>
                 <td>${product.name}</td>
                 <td>${product.description}</td>

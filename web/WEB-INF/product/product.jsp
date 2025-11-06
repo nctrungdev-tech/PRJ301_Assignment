@@ -6,11 +6,10 @@
         <!-- row -->
         <div class="col-md-12">
             <div class="col-md-6">
-<<<<<<< HEAD
-                <img src="<c:url value='${product.imageURL}' />" style="height: 281px; width: 400px" alt="">
-=======
-<img src="<c:url value='/${product.imageURL}'/>" alt="${product.name}">
->>>>>>> recovery
+<img src="${pageContext.request.contextPath}/${product.imageURL}" 
+     alt="${product.name}" 
+     style="width: 100%; height: 300px; object-fit: contain;">
+
 
             </div>
             <div class="col-md-6">

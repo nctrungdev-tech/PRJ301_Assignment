@@ -12,11 +12,10 @@
                     <div class="col-md-4 col-xs-6">
                         <div class="product">
                             <div class="product-img">
-<<<<<<< HEAD
-                                <img src="<c:url value='${product.imageURL}' />" style="height: 220px; width: 330px" alt="">
-=======
-<img src="<c:url value='/${product.imageURL}'/>" alt="${product.name}">
->>>>>>> recovery
+<img src="${pageContext.request.contextPath}/${product.imageURL}" 
+     alt="${product.name}" 
+     style="width: 100%; height: 300px; object-fit: contain;">
+
                                 <div class="product-label">
                                     <span class="sale">${product.discount}%</span>
 

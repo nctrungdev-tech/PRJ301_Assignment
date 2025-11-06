@@ -9,7 +9,11 @@
                     <div class="col-md-4 col-xs-6">
                         <div class="product">
                             <div class="product-img">
+<<<<<<< HEAD
                                 <img src="<c:url value='${product.imageURL}' />" style="height: 220px; width: 330px" alt="">
+=======
+<img src="<c:url value='/${product.imageURL}'/>" alt="${product.name}">
+>>>>>>> recovery
                                 <div class="product-label">
                                     <span class="sale">${product.discount}%</span>
 

@@ -109,7 +109,11 @@
                         <c:forEach var="product" items="${list1}">
                             <div class="product-widget">
                                 <div class="product-img">
+<<<<<<< HEAD
                                     <img src="<c:url value='${product.imageURL}' />" alt="">
+=======
+<img src="<c:url value='/${product.imageURL}'/>" alt="${product.name}">
+>>>>>>> recovery
                                 </div>
                                 <div class="product-body">
 

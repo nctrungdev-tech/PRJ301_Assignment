@@ -1,5 +1,3 @@
-
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -51,7 +49,8 @@
                     <div class="col-md-3">
                         <div class="header-logo">
                             <a href="<c:url value="/product/index.do" />" class="logo">
-                                <img src="<c:url value='/img/logoX2.png' />" alt="">
+                                <img src="<c:url value='/img/logoX2.png' />" alt=""
+                                     style="max-height:100px; width:auto; display:block; margin:0 auto; object-fit:contain;">
 
                             </a>
                         </div>

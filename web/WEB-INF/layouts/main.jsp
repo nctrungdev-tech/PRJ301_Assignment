@@ -1,5 +1,3 @@
-  
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -11,16 +9,18 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <!-- Google font -->
-        <title>TechX - HTML Ecommerce Template</title>
+        <title>TLStore - HTML Ecommerce Template</title>
         <link href="<c:url value='https://fonts.googleapis.com/css?family=Montserrat:400,500,700' />" rel="stylesheet">
         <link type="text/css" rel="stylesheet" href="<c:url value='/css/bootstrap.min.css' />"/>
         <link type="text/css" rel="stylesheet" href="<c:url value='/css/slick.css' />"/>
         <link type="text/css" rel="stylesheet" href="<c:url value='/css/slick-theme.css' />"/>
         <link type="text/css" rel="stylesheet" href="<c:url value='/css/nouislider.min.css' />"/>
-        <link rel="stylesheet" href="<c:url value='/css/font-awesome.min.css' />">
+    <!-- Font Awesome: CDN first (fallback to local copy if needed) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="<c:url value='/css/font-awesome.min.css' />">
         <link type="text/css" rel="stylesheet" href="<c:url value='/css/style.css' />"/>
         <link rel="stylesheet" href="<c:url value='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css' />">
-        
+
     </head>
     <body>
         <%--header--%>
@@ -33,8 +33,8 @@
         <jsp:include page="/WEB-INF/menu/footer.jsp" />
 
         <!-- jQuery Plugins -->
-        
-        
+
+
         <script src="<c:url value='/js/jquery.min.js' />"></script>
         <script src="<c:url value='/js/bootstrap.min.js' />"></script>
         <script src="<c:url value='/js/slick.min.js' />"></script>
@@ -44,9 +44,15 @@
     </body>
 </html>
 <script>
+    // Safely expose login state to JavaScript using JSTL to avoid JSP/JS parsing issues
+    var __isLoggedIn = false;
+    <c:if test="${user != null}">
+        __isLoggedIn = true;
+    </c:if>
+
     $(document).ready(function () {
         function isLoggedIn() {
-            return ${user != null}; // Chuyển đổi từ JSP sang JavaScript
+            return __isLoggedIn;
         }
 
         $(".add-to-wishlist").click(function (e) {

@@ -1,10 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package DAO;
-
 import db.DBContext;
 import entity.Users;
 import java.security.NoSuchAlgorithmException;
@@ -12,82 +6,78 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import utils.Hasher;
 
-/**
- *
- * @author VINH HIEN
- */
 public class UserFacade {
     
-    public Users login(String email, String passwordHash) throws SQLException, NoSuchAlgorithmException {
+    /**
+     * Login với email + password
+     * Không query avatar để tránh lỗi
+     */
+    public Users login(String email, String password) throws SQLException, NoSuchAlgorithmException {
         Users user = null;
-        // tao ket noi vao db
         Connection con = DBContext.getConnection();
-        //tao doi tuong statement
-        PreparedStatement stm = con.prepareStatement("select * from Users where email=? and passwordHash=?");
+        PreparedStatement stm = con.prepareStatement(
+            "SELECT userID, fullName, email, passwordHash, phone, address, createdAt, roled FROM Users WHERE email=?"
+        );
         stm.setString(1, email);
-        stm.setString(2, Hasher.hash(passwordHash));
-
-        //thuc thi lenh select
         ResultSet rs = stm.executeQuery();
-        //vì chỉ đọc 1 mẫu tin nên xài if gọn hơn xài while
+        
         if (rs.next()) {
-            // doc du lieu vao doi tuong Account
-            user = new Users(rs.getInt("userId"),
-                    rs.getString("fullname"),
-                    rs.getString("email"),
-                    rs.getString("passwordHash"),
-                    rs.getString("phone"),
-                    rs.getString("address"),
-                    rs.getDate("createdAt"),
-                    rs.getString("roled"));
+            user = new Users(
+                rs.getInt("userID"),
+                rs.getString("fullName"),
+                rs.getString("email"),
+                rs.getString("passwordHash"),
+                rs.getString("phone"),
+                rs.getString("address"),
+                rs.getDate("createdAt"),
+                rs.getString("roled"),
+                null  // avatarBase64 = null (không cần lúc login)
+            );
         }
-        //dong ket noi db
         con.close();
         return user;
     }
     
+    /**
+     * Tạo user mới
+     * Password được mã hóa bằng Hasher.hash()
+     */
     public void create(Users user) throws SQLException, NoSuchAlgorithmException {
-
-        // tao ket noi vao db
         Connection con = DBContext.getConnection();
-        //tao doi tuong statement
-        PreparedStatement stm = con.prepareStatement("INSERT INTO Users (FullName, Email, PasswordHash, Phone, Address) VALUES (?, ?, ?, ?, ?)");//vi co tham so nen use preparedStatement
-        //gan gia tri cho cac tham so
+        PreparedStatement stm = con.prepareStatement(
+            "INSERT INTO Users (FullName, Email, PasswordHash, Phone, Address, Roled, AvatarBase64) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?)"
+        );
         stm.setString(1, user.getFullName());
         stm.setString(2, user.getEmail());
         stm.setString(3, Hasher.hash(user.getPasswordHash()));
-        
         stm.setString(4, user.getPhone());
         stm.setString(5, user.getAddress());
-        
-        //thuc thi lenh select
-        int count = stm.executeUpdate();
-        //dong ket noi db
+        stm.setString(6, user.getRoled());
+        stm.setString(7, user.getAvatarBase64()); 
+        stm.executeUpdate();
         con.close();
-        
     }
     
+    /**
+     * Cập nhật user
+     * Password được mã hóa bằng Hasher.hash()
+     */
     public void update(Users user) throws SQLException, NoSuchAlgorithmException {
-        // tao ket noi vao db
         Connection con = DBContext.getConnection();
-        //tao doi tuong statement
-        PreparedStatement stm = con.prepareStatement("update Users set fullName=?, email=?, passwordHash=?, phone=?, address=? where userID=?");//vi co tham so nen use preparedStatement
-        //gan gia tri cho cac tham so
+        PreparedStatement stm = con.prepareStatement(
+            "UPDATE Users SET FullName=?, Email=?, PasswordHash=?, Phone=?, Address=?, AvatarBase64=? WHERE UserID=?"
+        );
         stm.setString(1, user.getFullName());
         stm.setString(2, user.getEmail());
         stm.setString(3, Hasher.hash(user.getPasswordHash()));
         stm.setString(4, user.getPhone());
         stm.setString(5, user.getAddress());
-        stm.setInt(6, user.getUserID());
-
-        //thuc thi lenh select
-        int count = stm.executeUpdate();
-        //dong ket noi db
+        stm.setString(6, user.getAvatarBase64()); 
+        stm.setInt(7, user.getUserID());
+        stm.executeUpdate();
         con.close();
-        
     }
 }

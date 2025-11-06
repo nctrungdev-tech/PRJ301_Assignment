@@ -24,6 +24,49 @@
         background: #744DA9;
         margin-bottom: 20px;
     }
+    
+    .avatar-section {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .avatar-preview {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 15px;
+        border: 3px solid #744DA9;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .avatar-upload {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    #avatarInput {
+        display: none;
+    }
+    
+    .btn-upload-avatar {
+        background-color: #744DA9;
+        color: white;
+        padding: 8px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    
+    .btn-upload-avatar:hover {
+        background-color: #5a3a7f;
+    }
+    
     .custom-form .input-group {
         display: flex;
         align-items: center;
@@ -57,10 +100,17 @@
         background-color: #744DA9;
         color: white;
     }
+    .btn-update:hover {
+        background-color: #5a3a7f;
+    }
     .btn-cancel {
         background-color: #333;
         color: white;
     }
+    .btn-cancel:hover {
+        background-color: #555;
+    }
+
     .message {
         margin-top: 10px;
         font-size: 14px;
@@ -72,6 +122,12 @@
     .success {
         color: green;
     }
+    
+    .avatar-info {
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+    }
 </style>
 
 <div class="custom-form">
@@ -81,9 +137,26 @@
     </div>
     <h1>User Profile</h1>
     <hr/>
-    <form action="<c:url value='/user/editProfile_handler.do' />">
+    
+    <!-- Avatar Upload Section -->
+    <div class="avatar-section">
+        <img id="avatarPreview" class="avatar-preview" 
+             src="${user.avatarBase64 != null ? user.avatarBase64 : 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23744DA9%22/%3E%3Ctext x=%2250%22 y=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22white%22 font-size=%2240%22%3E?%3C/text%3E%3C/svg%3E'}" 
+             alt="User Avatar">
+        <div class="avatar-upload">
+            <button type="button" class="btn-upload-avatar" onclick="document.getElementById('avatarInput').click()">
+                Choose Avatar
+            </button>
+            <input type="file" id="avatarInput" accept="image/*" onchange="previewAvatar(event)"/>
+            <div class="avatar-info">JPG, PNG (Max 5MB)</div>
+        </div>
+        <input type="hidden" id="hiddenAvatarData" name="avatarData" value=""/>
+    </div>
+    
+    <form action="<c:url value='/user/editProfile_handler.do' />" enctype="multipart/form-data">
         <input type="hidden" name="userID" value="${user.userID}"/>
-        
+        <input type="hidden" id="hiddenAvatarData" name="avatar" value=""/>
+
         <div class="input-group">
             <label>Full Name:</label>
             <input type="text" name="fullName" value="${param.fullName!=null?param.fullName:user.fullName}"/>
@@ -113,6 +186,7 @@
             <button type="submit" value="update" name="op" class="btn-update">Update</button>
             <button type="submit" value="cancel" name="op" class="btn-cancel">Cancel</button>
         </div>
+
     </form>
 </div>
 
@@ -130,6 +204,32 @@
             }
         } else {
             messageDiv.innerHTML = '';
+        }
+    }
+    
+    function previewAvatar(event) {
+        const file = event.target.files[0];
+        
+        if (file) {
+            // Kiểm tra kích thước file (5MB)
+            const maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+                alert('File quá lớn! Vui lòng chọn file nhỏ hơn 5MB');
+                return;
+            }
+            
+            // Kiểm tra loại file
+            if (!file.type.startsWith('image/')) {
+                alert('Vui lòng chọn một file hình ảnh');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('avatarPreview').src = e.target.result;
+                document.getElementById('hiddenAvatarData').value = e.target.result;
+            };
+            reader.readAsDataURL(file);
         }
     }
 </script>

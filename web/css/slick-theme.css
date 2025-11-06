@@ -202,3 +202,87 @@
     opacity: .75;
     color: black;
 }
+/* === FPT THEME FIX FOR SLICK SLIDER === */
+.slick-dots li button:before {
+    content: "";
+    background: #E4E7ED; /* chấm xám nhạt mặc định */
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
+    display: inline-block;
+    opacity: 1;
+}
+
+.slick-dots li.slick-active button:before {
+    background: #FF7A00 !important; /* chấm cam khi active */
+}
+
+.slick-prev,
+.slick-next {
+    width: 40px;
+    height: 40px;
+    border: 2px solid #FF7A00 !important;
+    background: #fff;
+    border-radius: 50%;
+    color: #FF7A00;
+    transition: 0.3s ease;
+}
+
+.slick-prev:hover,
+.slick-next:hover {
+    background: #FF7A00 !important;
+    color: #fff !important;
+}
+
+/* Biểu tượng mũi tên */
+.slick-prev:before,
+.slick-next:before {
+    font-family: "FontAwesome";
+    color: #FF7A00;
+    font-size: 18px;
+    opacity: 1;
+}
+
+.slick-prev:hover:before,
+.slick-next:hover:before {
+    color: #fff;
+}
+/* === FPT SHOP STYLE FIX FOR SLICK THEME === */
+.slick-prev:before,
+.slick-next:before {
+  font-family: "slick";
+  font-size: 24px;
+  color: #FF7A00 !important; /* Mũi tên cam FPT */
+  opacity: 1 !important;
+  transition: 0.3s ease;
+}
+
+.slick-prev:hover:before,
+.slick-next:hover:before {
+  color: #fff !important; /* Hover trắng */
+  background: #FF7A00;
+  border-radius: 50%;
+  padding: 8px;
+}
+
+/* Dot mặc định */
+.slick-dots li button:before {
+  content: "";
+  background: #ccc !important; /* Chấm xám */
+  border-radius: 50%;
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  opacity: 1 !important;
+  transition: background 0.3s ease;
+}
+
+/* Dot active */
+.slick-dots li.slick-active button:before {
+  background: #FF7A00 !important; /* Cam FPT */
+}
+
+/* Căn giữa dots đẹp hơn */
+.slick-dots {
+  bottom: -30px !important;
+}

@@ -109,7 +109,7 @@
                         <c:forEach var="product" items="${list1}">
                             <div class="product-widget">
                                 <div class="product-img">
-                                    <img src="<c:url value='${product.imageURL}' />" alt="">
+<img src="<c:url value='/${product.imageURL}'/>" alt="${product.name}">
                                 </div>
                                 <div class="product-body">
 

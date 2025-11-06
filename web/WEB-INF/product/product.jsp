@@ -6,7 +6,7 @@
         <!-- row -->
         <div class="col-md-12">
             <div class="col-md-6">
-                <img src="<c:url value='${product.imageURL}' />" style="height: 281px; width: 400px" alt="">
+<img src="<c:url value='/${product.imageURL}'/>" alt="${product.name}">
 
             </div>
             <div class="col-md-6">

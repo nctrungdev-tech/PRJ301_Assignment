@@ -1,47 +1,29 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package controllers;
 
-import DAO.OrderFacade;
 import DAO.UserFacade;
-import entity.Orders;
 import entity.Users;
+import utils.EmailUtils;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
+import java.sql.SQLException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
+import java.util.Base64;
 
-/**
- *
- * @author VINH HIEN
- */
 @WebServlet(name = "UserController", urlPatterns = {"/user"})
+@MultipartConfig(maxFileSize = 5 * 1024 * 1024) // 5MB
 public class UserController extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         String action = request.getAttribute("action").toString();
-        switch (action) {         
+        switch (action) {
             case "login":
                 login(request, response);
                 break;
@@ -56,49 +38,71 @@ public class UserController extends HttpServlet {
                 break;
             case "create_handler":
                 create_handler(request, response);
-                break;    
+                break;
             case "editProfile":
                 editProfile(request, response);
-                break; 
+                break;
             case "editProfile_handler":
                 editProfile_handler(request, response);
-                break;  
+                break;
         }
     }
+
     protected void login(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {       
+            throws ServletException, IOException {
         request.getRequestDispatcher(Config.LAYOUT).forward(request, response);
     }
-    protected void login_handler(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            String op = request.getParameter("op");
-            switch (op) {
-                case "login":
-                    String email = request.getParameter("email");
-                    String passwordHash = request.getParameter("passwordHash");
 
-                    UserFacade uf = new UserFacade();
-                    Users user = uf.login(email, passwordHash);
-                    if (user != null) {
-                        HttpSession session = request.getSession();
-                        session.setAttribute("user", user);
-                        request.getRequestDispatcher("/product/index.do").forward(request, response);
-                    } else {
-                        request.setAttribute("message", "Please check your email and password.");
-                        request.getRequestDispatcher("/user/login.do").forward(request, response);
-                    }
-                    break;
-                case "cancel":
+    protected void login_handler(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+    try {
+        String op = request.getParameter("op");
+        UserFacade uf = new UserFacade();
+
+        switch (op) {
+            case "login":
+                String email = request.getParameter("email");
+                String password = request.getParameter("password");  // ← Đổi từ passwordHash
+
+                Users user = uf.login(email, password);  // ← Truyền password (plain text)
+                if (user != null) {
+                    HttpSession session = request.getSession();
+                    session.setAttribute("user", user);
                     request.getRequestDispatcher("/product/index.do").forward(request, response);
-                    break;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("message", e.getMessage());
-            request.getRequestDispatcher("/user/login.do").forward(request, response);
+                } else {
+                    request.setAttribute("message", "Please check your email and password.");
+                    request.getRequestDispatcher("/user/login.do").forward(request, response);
+                }
+                break;
+
+            case "guest":
+                Users guest = new Users();
+                guest.setUserID(0);
+                guest.setFullName("Guest User");
+                guest.setEmail("guest@demo.com");
+                guest.setRoled("Guest");
+
+                HttpSession guestSession = request.getSession();
+                guestSession.setAttribute("user", guest);
+                request.getRequestDispatcher("/product/index.do").forward(request, response);
+                break;
+
+            case "cancel":
+                request.getRequestDispatcher("/product/index.do").forward(request, response);
+                break;
+
+            default:
+                request.setAttribute("message", "Invalid action.");
+                request.getRequestDispatcher("/user/login.do").forward(request, response);
+                break;
         }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        request.setAttribute("message", "An error occurred: " + e.getMessage());
+        request.getRequestDispatcher("/user/login.do").forward(request, response);
     }
+}
 
     protected void logout(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -106,10 +110,12 @@ public class UserController extends HttpServlet {
         session.invalidate();
         request.getRequestDispatcher("/product/index.do").forward(request, response);
     }
+
     protected void create(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.getRequestDispatcher(Config.LAYOUT).forward(request, response);
     }
+
     protected void create_handler(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
@@ -121,46 +127,68 @@ public class UserController extends HttpServlet {
                     String passwordHash = request.getParameter("passwordHash");
                     String phone = request.getParameter("phone");
                     String address = request.getParameter("address");
+                    String avatarData = null;
+
                     String errorMessage = "";
-                    // Ràng buộc cho fullName
-                    if (fullName == null || fullName.isEmpty() || fullName.length() < 8 || fullName.length() > 50) {
+                    if (fullName == null || fullName.isEmpty() || fullName.length() < 8 || fullName.length() > 50)
                         errorMessage += "Full name must be between 8 and 50 characters.<br/>";
-                    }
-                    // Ràng buộc cho email
-                    if (email == null || email.isEmpty() || !email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+                    if (email == null || email.isEmpty() || !email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$"))
                         errorMessage += "Email is invalid.<br/>";
-                    }
-                    // Ràng buộc cho phone
-                    if (phone == null || phone.isEmpty() || !phone.matches("\\d{10}")) {
+                    if (phone == null || phone.isEmpty() || !phone.matches("\\d{10}"))
                         errorMessage += "Phone number must be 10 digits long.<br/>";
-                    }
-                    // Ràng buộc cho address
-                    if (address == null || address.isEmpty()) {
+                    if (address == null || address.isEmpty())
                         errorMessage += "Address cannot be empty.<br/>";
-                    }
-                    // Ràng buộc cho passwordHash
-                    if (passwordHash == null || passwordHash.isEmpty() || passwordHash.length() < 6) {
+                    if (passwordHash == null || passwordHash.isEmpty() || passwordHash.length() < 6)
                         errorMessage += "Password must be at least 6 characters long.<br/>";
-                    }
-                    // Nếu có lỗi, gửi lại thông báo
+
                     if (errorMessage.length() > 0) {
                         request.setAttribute("message3", errorMessage);
                         request.getRequestDispatcher("/user/create.do").forward(request, response);
                         return;
-                    } else {
-                        Users user = new Users();
-                        user.setFullName(fullName);
-                        user.setEmail(email);
-                        user.setPasswordHash(passwordHash);
-                        user.setPhone(phone);
-                        user.setAddress(address);
-
-                        UserFacade uf = new UserFacade();
-                        uf.create(user);
-                        request.setAttribute("message", "Congratulations. You have successfully registered!");
-                        request.getRequestDispatcher("/user/create.do").forward(request, response);
-                        break;
                     }
+
+                    // Xử lý avatar
+                    try {
+                        Part filePart = request.getPart("avatarData");
+                        if (filePart != null && filePart.getSize() > 0) {
+                            byte[] fileBytes = new byte[(int) filePart.getSize()];
+                            filePart.getInputStream().read(fileBytes);
+                            avatarData = Base64.getEncoder().encodeToString(fileBytes);
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Avatar upload optional: " + e.getMessage());
+                    }
+
+                    Users user = new Users();
+                    user.setFullName(fullName);
+                    user.setEmail(email);
+                    user.setPasswordHash(passwordHash);
+                    user.setPhone(phone);
+                    user.setAddress(address);
+                    user.setRoled("Customer"); // Mặc định là Customer
+                    if (avatarData != null) {
+                        user.setAvatarBase64(avatarData);
+                    }
+
+                    UserFacade uf = new UserFacade();
+                    uf.create(user);
+                    
+                    // GỬI EMAIL ĐĂNG KÝ THÀNH CÔNG
+                    boolean emailSent = EmailUtils.sendRegistrationEmail(
+                        email, 
+                        fullName, 
+                        String.valueOf(user.getUserID())
+                    );
+                    
+                    if (emailSent) {
+                        request.setAttribute("message", "Congratulations. You have successfully registered! A confirmation email has been sent to your email address.");
+                    } else {
+                        request.setAttribute("message", "Congratulations. You have successfully registered! (Email sending failed, please check your email settings)");
+                    }
+                    
+                    request.getRequestDispatcher("/user/create.do").forward(request, response);
+                    break;
+
                 case "cancel":
                     request.getRequestDispatcher("/product/index.do").forward(request, response);
                     break;
@@ -171,110 +199,150 @@ public class UserController extends HttpServlet {
             request.getRequestDispatcher("/user/create.do").forward(request, response);
         }
     }
+
     protected void editProfile(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.getRequestDispatcher(Config.LAYOUT).forward(request, response);
     }
+
     protected void editProfile_handler(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
             String op = request.getParameter("op");
+            HttpSession session = request.getSession(false);
+            Users loggedInUser = null;
+
+            // Lấy user đang login từ session
+            if (session != null) {
+                loggedInUser = (Users) session.getAttribute("user");
+            }
+
+            // Kiểm tra nếu không có user login
+            if (loggedInUser == null) {
+                request.setAttribute("message3", "You must login first!");
+                request.getRequestDispatcher("/user/login.do").forward(request, response);
+                return;
+            }
+
+            UserFacade uf = new UserFacade();
+
             switch (op) {
                 case "update":
-                    int userId= Integer.parseInt(request.getParameter("userID"));
+                    int userId = Integer.parseInt(request.getParameter("userID"));
                     String fullName = request.getParameter("fullName");
                     String email = request.getParameter("email");
                     String passwordHash = request.getParameter("passwordHash");
                     String phone = request.getParameter("phone");
                     String address = request.getParameter("address");
+                    String avatarData = null;
+
+                    // PHÂN QUYỀN:
+                    // Admin không được update users
+                    if (loggedInUser.getRoled().equals("Admin")) {
+                        request.setAttribute("message3", "Admin cannot update user profiles!");
+                        request.getRequestDispatcher("/user/editProfile.do").forward(request, response);
+                        return;
+                    }
+
+                    // Customer chỉ được update thông tin của chính mình
+                    if (loggedInUser.getRoled().equals("Customer") && loggedInUser.getUserID() != userId) {
+                        request.setAttribute("message3", "You can only update your own profile!");
+                        request.getRequestDispatcher("/user/editProfile.do").forward(request, response);
+                        return;
+                    }
+
                     String errorMessage = "";
-                    // Ràng buộc cho fullName
-                    if (fullName == null || fullName.isEmpty() || fullName.length() < 8 || fullName.length() > 50) {
+                    if (fullName == null || fullName.isEmpty() || fullName.length() < 8 || fullName.length() > 50)
                         errorMessage += "Full name must be between 8 and 50 characters.<br/>";
-                    }
-                    // Ràng buộc cho email
-                    if (email == null || email.isEmpty() || !email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+                    if (email == null || email.isEmpty() || !email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$"))
                         errorMessage += "Email is invalid.<br/>";
-                    }
-                    // Ràng buộc cho phone
-                    if (phone == null || phone.isEmpty() || !phone.matches("\\d{10}")) {
+                    if (phone == null || phone.isEmpty() || !phone.matches("\\d{10}"))
                         errorMessage += "Phone number must be 10 digits long.<br/>";
-                    }
-                    // Ràng buộc cho address
-                    if (address == null || address.isEmpty()) {
+                    if (address == null || address.isEmpty())
                         errorMessage += "Address cannot be empty.<br/>";
-                    }
-                    // Ràng buộc cho passwordHash
-                    if (passwordHash == null || passwordHash.isEmpty() || passwordHash.length() < 6) {
+                    if (passwordHash == null || passwordHash.isEmpty() || passwordHash.length() < 6)
                         errorMessage += "Password must be at least 6 characters long.<br/>";
-                    }
+
                     if (errorMessage.length() > 0) {
                         request.setAttribute("message3", errorMessage);
                         request.getRequestDispatcher("/user/editProfile.do").forward(request, response);
                         return;
-                    } else {
-                        Users user = new Users();
-                        user.setUserID(userId);
-                        user.setFullName(fullName);
-                        user.setEmail(email);
-                        user.setPasswordHash(passwordHash);
-                        user.setPhone(phone);
-                        user.setAddress(address);
+                    }
 
-                        UserFacade uf = new UserFacade();
-                        uf.update(user);
-                        request.setAttribute("message", "Congratulations. You have successfully updated!");
-                        request.getRequestDispatcher("/user/editProfile.do").forward(request, response);
-                        break;
-                    } 
-                case "cancel":    
+                    // Xử lý avatar
+                    try {
+                        Part filePart = request.getPart("avatarData");
+                        if (filePart != null && filePart.getSize() > 0) {
+                            byte[] fileBytes = new byte[(int) filePart.getSize()];
+                            filePart.getInputStream().read(fileBytes);
+                            avatarData = Base64.getEncoder().encodeToString(fileBytes);
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Avatar upload optional: " + e.getMessage());
+                    }
+
+                    Users user = new Users();
+                    user.setUserID(userId);
+                    user.setFullName(fullName);
+                    user.setEmail(email);
+                    user.setPasswordHash(passwordHash);
+                    user.setPhone(phone);
+                    user.setAddress(address);
+                    if (avatarData != null) {
+                        user.setAvatarBase64(avatarData);
+                    }
+
+                    uf.update(user);
+
+                    // GỬI EMAIL THÔNG BÁO CẬP NHẬT PROFILE
+                    boolean emailSent = EmailUtils.sendRegistrationEmail(
+                        email, 
+                        fullName, 
+                        String.valueOf(userId)
+                    );
+                    
+                    if (emailSent) {
+                        request.setAttribute("message", "Congratulations. You have successfully updated! A confirmation email has been sent to your email address.");
+                    } else {
+                        request.setAttribute("message", "Congratulations. You have successfully updated! (Email sending failed)");
+                    }
+
+                    // Cập nhật session
+                    session.setAttribute("user", user);
+
+                    request.getRequestDispatcher("/user/editProfile.do").forward(request, response);
+                    break;
+
+                case "cancel":
                     request.getRequestDispatcher("/product/index.do").forward(request, response);
                     break;
+
+                default:
+                    request.getRequestDispatcher("/user/editProfile.do").forward(request, response);
+                    break;
             }
+
         } catch (Exception ex) {
             ex.printStackTrace();
-            request.setAttribute("message3", "Can't update User into database.");
+            request.setAttribute("message3", "Error while processing request!");
             request.getRequestDispatcher("/user/editProfile.do").forward(request, response);
         }
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         processRequest(request, response);
     }
 
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         processRequest(request, response);
     }
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
     @Override
     public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
+        return "UserController Servlet";
+    }
 }

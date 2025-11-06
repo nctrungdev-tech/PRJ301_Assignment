@@ -20,11 +20,12 @@ public class Users {
     private String address;
     private Date createdAt;
     private String roled;
+     private String avatarBase64;
 
     public Users() {
     }
 
-    public Users(int userID, String fullName, String email, String passwordHash, String phone, String address, Date createdAt, String roled) {
+    public Users(int userID, String fullName, String email, String passwordHash, String phone, String address, Date createdAt, String roled, String avatarBase64) {
         this.userID = userID;
         this.fullName = fullName;
         this.email = email;
@@ -33,6 +34,7 @@ public class Users {
         this.address = address;
         this.createdAt = createdAt;
         this.roled = roled;
+        this.avatarBase64 = avatarBase64;
     }
 
     public int getUserID() {
@@ -99,7 +101,14 @@ public class Users {
         this.roled = roled;
     }
 
-    
+    public String getAvatarBase64() {
+        return avatarBase64;
+    }
+
+    public void setAvatarBase64(String avatarBase64) {
+        this.avatarBase64 = avatarBase64;
+    }
+
     
     
 }

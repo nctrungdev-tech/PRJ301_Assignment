@@ -19,7 +19,7 @@ import java.util.List;
 
 /**
  *
- * @author VINH HIEN
+ * @author TLStore
  */
 public class ProductFacade {
 

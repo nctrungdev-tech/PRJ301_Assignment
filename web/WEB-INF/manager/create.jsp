@@ -14,13 +14,13 @@
         text-align: center;
     }
     .custom-form h1 {
-        color: #744DA9;
+        color: #FFA500; /* Đã đổi sang cam */
         margin-bottom: 10px;
     }
     .custom-form hr {
         border: none;
         height: 2px;
-        background: #744DA9;
+        background: #FFA500; /* Đã đổi sang cam */
         margin-bottom: 20px;
     }
     .custom-form input {
@@ -44,7 +44,7 @@
         cursor: pointer;
     }
     .btn-create {
-        background-color: #744DA9;
+        background-color: #FFA500; /* Đã đổi sang cam */
         color: white;
     }
     .btn-cancel {
@@ -90,5 +90,3 @@
         
     </form>
 </div>
-
-

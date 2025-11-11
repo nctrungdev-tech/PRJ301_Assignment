@@ -35,7 +35,7 @@
         margin-bottom: 15px;
     }
     .btn-revenue {
-        background-color: #744DA9;
+        background-color: #FFA500; /* Đã đổi sang cam */
         color: white;
         padding: 10px 15px;
         border: none;
@@ -44,7 +44,7 @@
         cursor: pointer;
     }
     .btn-revenue:hover {
-        background-color: #744DA9;
+        background-color: #E69500; /* Đổi sang cam đậm */
     }
     .btn-action {
         display: inline-block;
@@ -58,7 +58,7 @@
         line-height: 36px;
     }
     .btn-update {
-        background-color: #744DA9;
+        background-color: #FFA500; /* Đã đổi sang cam */
         color: white;
         border-radius: 50%;
         display: inline-flex;
@@ -69,7 +69,7 @@
         height: 40px;
     }
     .btn-update:hover {
-        background-color: #744DA9;
+        background-color: #E69500; /* Đổi sang cam đậm */
     }
     .btn-delete {
         background-color: #000;
@@ -97,7 +97,7 @@
             <th>Shipping Id</th>
             <th>Total Price</th>
             <th>Status</th>
-            <th>Date Created</th>        
+            <th>Date Created</th>      
             <th>Operations</th>
         </tr>
         <c:forEach items="${list}" var="order" varStatus="loop">
@@ -105,7 +105,7 @@
                 <td>${loop.index + 1}</td>
                 <td>${order.orderID}</td>
                 <td>${order.userID}</td>
-                <td>${order.shippingID}</td>       
+                <td>${order.shippingID}</td>    
                 <td>
                     <fmt:formatNumber value="${order.totalPrice}" type="currency"/>
                 </td>

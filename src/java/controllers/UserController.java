@@ -1,22 +1,20 @@
 package controllers;
 
+import DAO.OrderFacade;
 import DAO.UserFacade;
+import DAO.WalletFacade;
 import entity.Users;
-import utils.EmailUtils;
+import entity.Wallet;
 import java.io.IOException;
-import java.sql.SQLException;
+import java.io.PrintWriter;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.servlet.http.Part;
-import java.util.Base64;
 
 @WebServlet(name = "UserController", urlPatterns = {"/user"})
-@MultipartConfig(maxFileSize = 5 * 1024 * 1024) // 5MB
 public class UserController extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
@@ -45,64 +43,56 @@ public class UserController extends HttpServlet {
             case "editProfile_handler":
                 editProfile_handler(request, response);
                 break;
+            case "wallet":
+                wallet(request, response);
+                break;
         }
     }
 
+    // ======================= LOGIN ========================
     protected void login(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.getRequestDispatcher(Config.LAYOUT).forward(request, response);
     }
 
     protected void login_handler(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException {
-    try {
-        String op = request.getParameter("op");
-        UserFacade uf = new UserFacade();
+            throws ServletException, IOException {
+        try {
+            String op = request.getParameter("op");
+            switch (op) {
+                case "login":
+                    String email = request.getParameter("email");
+                    String passwordHash = request.getParameter("passwordHash");
 
-        switch (op) {
-            case "login":
-                String email = request.getParameter("email");
-                String password = request.getParameter("password");  // ← Đổi từ passwordHash
+                    UserFacade uf = new UserFacade();
+                    Users user = uf.login(email, passwordHash);
+                    if (user != null) {
+                        HttpSession session = request.getSession();
+                        session.setAttribute("user", user);
+                        request.getRequestDispatcher("/product/index.do").forward(request, response);
+                    } else {
+                        request.setAttribute("message", "Please check your email and password.");
+                        request.getRequestDispatcher("/user/login.do").forward(request, response);
+                    }
+                    break;
 
-                Users user = uf.login(email, password);  // ← Truyền password (plain text)
-                if (user != null) {
-                    HttpSession session = request.getSession();
-                    session.setAttribute("user", user);
+                case "guest":
+                    HttpSession guestSession = request.getSession();
+                    guestSession.setAttribute("isGuest", true);
+                    guestSession.setAttribute("user", null);
                     request.getRequestDispatcher("/product/index.do").forward(request, response);
-                } else {
-                    request.setAttribute("message", "Please check your email and password.");
-                    request.getRequestDispatcher("/user/login.do").forward(request, response);
-                }
-                break;
+                    break;
 
-            case "guest":
-                Users guest = new Users();
-                guest.setUserID(0);
-                guest.setFullName("Guest User");
-                guest.setEmail("guest@demo.com");
-                guest.setRoled("Guest");
-
-                HttpSession guestSession = request.getSession();
-                guestSession.setAttribute("user", guest);
-                request.getRequestDispatcher("/product/index.do").forward(request, response);
-                break;
-
-            case "cancel":
-                request.getRequestDispatcher("/product/index.do").forward(request, response);
-                break;
-
-            default:
-                request.setAttribute("message", "Invalid action.");
-                request.getRequestDispatcher("/user/login.do").forward(request, response);
-                break;
+                case "cancel":
+                    request.getRequestDispatcher("/product/index.do").forward(request, response);
+                    break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("message", e.getMessage());
+            request.getRequestDispatcher("/user/login.do").forward(request, response);
         }
-
-    } catch (Exception e) {
-        e.printStackTrace();
-        request.setAttribute("message", "An error occurred: " + e.getMessage());
-        request.getRequestDispatcher("/user/login.do").forward(request, response);
     }
-}
 
     protected void logout(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -111,6 +101,7 @@ public class UserController extends HttpServlet {
         request.getRequestDispatcher("/product/index.do").forward(request, response);
     }
 
+    // ======================= CREATE (REGISTER) ========================
     protected void create(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.getRequestDispatcher(Config.LAYOUT).forward(request, response);
@@ -120,86 +111,64 @@ public class UserController extends HttpServlet {
             throws ServletException, IOException {
         try {
             String op = request.getParameter("op");
-            switch (op) {
-                case "create":
-                    String fullName = request.getParameter("fullName");
-                    String email = request.getParameter("email");
-                    String passwordHash = request.getParameter("passwordHash");
-                    String phone = request.getParameter("phone");
-                    String address = request.getParameter("address");
-                    String avatarData = null;
-
-                    String errorMessage = "";
-                    if (fullName == null || fullName.isEmpty() || fullName.length() < 8 || fullName.length() > 50)
-                        errorMessage += "Full name must be between 8 and 50 characters.<br/>";
-                    if (email == null || email.isEmpty() || !email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$"))
-                        errorMessage += "Email is invalid.<br/>";
-                    if (phone == null || phone.isEmpty() || !phone.matches("\\d{10}"))
-                        errorMessage += "Phone number must be 10 digits long.<br/>";
-                    if (address == null || address.isEmpty())
-                        errorMessage += "Address cannot be empty.<br/>";
-                    if (passwordHash == null || passwordHash.isEmpty() || passwordHash.length() < 6)
-                        errorMessage += "Password must be at least 6 characters long.<br/>";
-
-                    if (errorMessage.length() > 0) {
-                        request.setAttribute("message3", errorMessage);
-                        request.getRequestDispatcher("/user/create.do").forward(request, response);
-                        return;
-                    }
-
-                    // Xử lý avatar
-                    try {
-                        Part filePart = request.getPart("avatarData");
-                        if (filePart != null && filePart.getSize() > 0) {
-                            byte[] fileBytes = new byte[(int) filePart.getSize()];
-                            filePart.getInputStream().read(fileBytes);
-                            avatarData = Base64.getEncoder().encodeToString(fileBytes);
-                        }
-                    } catch (Exception e) {
-                        System.out.println("Avatar upload optional: " + e.getMessage());
-                    }
-
-                    Users user = new Users();
-                    user.setFullName(fullName);
-                    user.setEmail(email);
-                    user.setPasswordHash(passwordHash);
-                    user.setPhone(phone);
-                    user.setAddress(address);
-                    user.setRoled("Customer"); // Mặc định là Customer
-                    if (avatarData != null) {
-                        user.setAvatarBase64(avatarData);
-                    }
-
-                    UserFacade uf = new UserFacade();
-                    uf.create(user);
-                    
-                    // GỬI EMAIL ĐĂNG KÝ THÀNH CÔNG
-                    boolean emailSent = EmailUtils.sendRegistrationEmail(
-                        email, 
-                        fullName, 
-                        String.valueOf(user.getUserID())
-                    );
-                    
-                    if (emailSent) {
-                        request.setAttribute("message", "Congratulations. You have successfully registered! A confirmation email has been sent to your email address.");
-                    } else {
-                        request.setAttribute("message", "Congratulations. You have successfully registered! (Email sending failed, please check your email settings)");
-                    }
-                    
-                    request.getRequestDispatcher("/user/create.do").forward(request, response);
-                    break;
-
-                case "cancel":
-                    request.getRequestDispatcher("/product/index.do").forward(request, response);
-                    break;
+            if (!"create".equals(op)) {
+                request.getRequestDispatcher("/product/index.do").forward(request, response);
+                return;
             }
+
+            String fullName = request.getParameter("fullName");
+            String email = request.getParameter("email");
+            String password = request.getParameter("passwordHash");
+            String phone = request.getParameter("phone");
+            String address = request.getParameter("address");
+
+            String agreePolicy = request.getParameter("agreePolicy");
+            if (agreePolicy == null) {
+                request.setAttribute("message3", "You must agree with the service policy.<br/>");
+                request.getRequestDispatcher("/user/create.do").forward(request, response);
+                return;
+            }
+
+            String errorMessage = "";
+            if (fullName == null || fullName.isEmpty() || fullName.length() < 3 || fullName.length() > 50)
+                errorMessage += "Full name must be between 3 and 50 characters.<br/>";
+            if (email == null || email.isEmpty() || !email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$"))
+                errorMessage += "Email is invalid.<br/>";
+            if (phone == null || phone.isEmpty() || !phone.matches("\\d{10}"))
+                errorMessage += "Phone number must be 10 digits long.<br/>";
+            if (address == null || address.isEmpty())
+                errorMessage += "Address cannot be empty.<br/>";
+            if (password == null || password.isEmpty() || password.length() < 4)
+                errorMessage += "Password must be at least 4 characters long.<br/>";
+
+            if (!errorMessage.isEmpty()) {
+                request.setAttribute("message3", errorMessage);
+                request.getRequestDispatcher("/user/create.do").forward(request, response);
+                return;
+            }
+
+            Users user = new Users();
+            user.setFullName(fullName);
+            user.setEmail(email);
+            user.setPasswordHash(password);
+            user.setPhone(phone);
+            user.setAddress(address);
+            user.setRoled("customer");
+
+            UserFacade uf = new UserFacade();
+            uf.create(user);
+
+            request.setAttribute("message", "🎉 Congratulations! You have successfully registered!");
+            request.getRequestDispatcher("/user/create.do").forward(request, response);
+
         } catch (Exception ex) {
             ex.printStackTrace();
-            request.setAttribute("message2", "Sorry. Registration failed!");
+            request.setAttribute("message3", "⚠️ Registration failed. Please try again.");
             request.getRequestDispatcher("/user/create.do").forward(request, response);
         }
     }
 
+    // ======================= EDIT PROFILE ========================
     protected void editProfile(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.getRequestDispatcher(Config.LAYOUT).forward(request, response);
@@ -209,123 +178,101 @@ public class UserController extends HttpServlet {
             throws ServletException, IOException {
         try {
             String op = request.getParameter("op");
-            HttpSession session = request.getSession(false);
-            Users loggedInUser = null;
-
-            // Lấy user đang login từ session
-            if (session != null) {
-                loggedInUser = (Users) session.getAttribute("user");
+            if (!"update".equals(op)) {
+                request.getRequestDispatcher("/product/index.do").forward(request, response);
+                return;
             }
 
-            // Kiểm tra nếu không có user login
-            if (loggedInUser == null) {
-                request.setAttribute("message3", "You must login first!");
-                request.getRequestDispatcher("/user/login.do").forward(request, response);
+            int userId = Integer.parseInt(request.getParameter("userID"));
+            String fullName = request.getParameter("fullName");
+            String email = request.getParameter("email");
+            String password = request.getParameter("passwordHash");
+            String phone = request.getParameter("phone");
+            String address = request.getParameter("address");
+
+            String errorMessage = "";
+            if (fullName == null || fullName.isEmpty() || fullName.length() < 3 || fullName.length() > 50)
+                errorMessage += "Full name must be between 3 and 50 characters.<br/>";
+            if (email == null || email.isEmpty() || !email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$"))
+                errorMessage += "Email is invalid.<br/>";
+            if (phone == null || phone.isEmpty() || !phone.matches("\\d{10}"))
+                errorMessage += "Phone number must be 10 digits long.<br/>";
+            if (address == null || address.isEmpty())
+                errorMessage += "Address cannot be empty.<br/>";
+            if (password != null && !password.isEmpty() && password.length() < 4)
+                errorMessage += "Password must be at least 4 characters long.<br/>";
+
+            if (!errorMessage.isEmpty()) {
+                request.setAttribute("message3", errorMessage);
+                request.getRequestDispatcher("/user/editProfile.do").forward(request, response);
                 return;
             }
 
             UserFacade uf = new UserFacade();
-
-            switch (op) {
-                case "update":
-                    int userId = Integer.parseInt(request.getParameter("userID"));
-                    String fullName = request.getParameter("fullName");
-                    String email = request.getParameter("email");
-                    String passwordHash = request.getParameter("passwordHash");
-                    String phone = request.getParameter("phone");
-                    String address = request.getParameter("address");
-                    String avatarData = null;
-
-                    // PHÂN QUYỀN:
-                    // Admin không được update users
-                    if (loggedInUser.getRoled().equals("Admin")) {
-                        request.setAttribute("message3", "Admin cannot update user profiles!");
-                        request.getRequestDispatcher("/user/editProfile.do").forward(request, response);
-                        return;
-                    }
-
-                    // Customer chỉ được update thông tin của chính mình
-                    if (loggedInUser.getRoled().equals("Customer") && loggedInUser.getUserID() != userId) {
-                        request.setAttribute("message3", "You can only update your own profile!");
-                        request.getRequestDispatcher("/user/editProfile.do").forward(request, response);
-                        return;
-                    }
-
-                    String errorMessage = "";
-                    if (fullName == null || fullName.isEmpty() || fullName.length() < 8 || fullName.length() > 50)
-                        errorMessage += "Full name must be between 8 and 50 characters.<br/>";
-                    if (email == null || email.isEmpty() || !email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$"))
-                        errorMessage += "Email is invalid.<br/>";
-                    if (phone == null || phone.isEmpty() || !phone.matches("\\d{10}"))
-                        errorMessage += "Phone number must be 10 digits long.<br/>";
-                    if (address == null || address.isEmpty())
-                        errorMessage += "Address cannot be empty.<br/>";
-                    if (passwordHash == null || passwordHash.isEmpty() || passwordHash.length() < 6)
-                        errorMessage += "Password must be at least 6 characters long.<br/>";
-
-                    if (errorMessage.length() > 0) {
-                        request.setAttribute("message3", errorMessage);
-                        request.getRequestDispatcher("/user/editProfile.do").forward(request, response);
-                        return;
-                    }
-
-                    // Xử lý avatar
-                    try {
-                        Part filePart = request.getPart("avatarData");
-                        if (filePart != null && filePart.getSize() > 0) {
-                            byte[] fileBytes = new byte[(int) filePart.getSize()];
-                            filePart.getInputStream().read(fileBytes);
-                            avatarData = Base64.getEncoder().encodeToString(fileBytes);
-                        }
-                    } catch (Exception e) {
-                        System.out.println("Avatar upload optional: " + e.getMessage());
-                    }
-
-                    Users user = new Users();
-                    user.setUserID(userId);
-                    user.setFullName(fullName);
-                    user.setEmail(email);
-                    user.setPasswordHash(passwordHash);
-                    user.setPhone(phone);
-                    user.setAddress(address);
-                    if (avatarData != null) {
-                        user.setAvatarBase64(avatarData);
-                    }
-
-                    uf.update(user);
-
-                    // GỬI EMAIL THÔNG BÁO CẬP NHẬT PROFILE
-                    boolean emailSent = EmailUtils.sendRegistrationEmail(
-                        email, 
-                        fullName, 
-                        String.valueOf(userId)
-                    );
-                    
-                    if (emailSent) {
-                        request.setAttribute("message", "Congratulations. You have successfully updated! A confirmation email has been sent to your email address.");
-                    } else {
-                        request.setAttribute("message", "Congratulations. You have successfully updated! (Email sending failed)");
-                    }
-
-                    // Cập nhật session
-                    session.setAttribute("user", user);
-
-                    request.getRequestDispatcher("/user/editProfile.do").forward(request, response);
-                    break;
-
-                case "cancel":
-                    request.getRequestDispatcher("/product/index.do").forward(request, response);
-                    break;
-
-                default:
-                    request.getRequestDispatcher("/user/editProfile.do").forward(request, response);
-                    break;
+            Users oldUser = uf.select(userId);
+            if (oldUser == null) {
+                request.setAttribute("message3", "User not found.");
+                request.getRequestDispatcher("/user/editProfile.do").forward(request, response);
+                return;
             }
+
+            Users user = new Users();
+            user.setUserID(userId);
+            user.setFullName(fullName);
+            user.setEmail(email);
+            user.setPhone(phone);
+            user.setAddress(address);
+            user.setRoled(oldUser.getRoled());
+
+            if (password == null || password.isEmpty())
+                user.setPasswordHash(oldUser.getPasswordHash());
+            else
+                user.setPasswordHash(password);
+
+            uf.update(user);
+
+            HttpSession session = request.getSession();
+            session.setAttribute("user", user);
+
+            request.setAttribute("message", "Profile updated successfully!");
+            request.getRequestDispatcher("/user/editProfile.do").forward(request, response);
 
         } catch (Exception ex) {
             ex.printStackTrace();
-            request.setAttribute("message3", "Error while processing request!");
+            request.setAttribute("message3", "Can't update user.");
             request.getRequestDispatcher("/user/editProfile.do").forward(request, response);
+        }
+    }
+
+    // ======================= WALLET ========================
+    protected void wallet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            HttpSession session = request.getSession();
+            Users user = (Users) session.getAttribute("user");
+
+            if (user == null) {
+                response.sendRedirect(request.getContextPath() + "/user/login.do");
+                return;
+            }
+
+            String action = request.getParameter("action");
+            if ("topup".equals(action)) {
+                double amount = Double.parseDouble(request.getParameter("amount"));
+                WalletFacade wf = new WalletFacade();
+                wf.addMoney(user.getUserID(), amount);
+
+                response.setContentType("application/json");
+                PrintWriter out = response.getWriter();
+                out.print("{\"success\": true}");
+                out.flush();
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            response.setContentType("application/json");
+            PrintWriter out = response.getWriter();
+            out.print("{\"success\": false}");
+            out.flush();
         }
     }
 
@@ -343,6 +290,6 @@ public class UserController extends HttpServlet {
 
     @Override
     public String getServletInfo() {
-        return "UserController Servlet";
+        return "User Controller";
     }
 }

@@ -7,7 +7,7 @@ package entity;
 
 /**
  *
- * @author VINH HIEN
+ * @author TLStore
  */
 public class Shipping {
     private int shippingID;

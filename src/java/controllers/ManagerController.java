@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  *
- * @author VINH HIEN
+ * @author TLStore
  */
 @WebServlet(name = "ManagerController", urlPatterns = {"/manager"})
 public class ManagerController extends HttpServlet {

@@ -6,6 +6,7 @@
 package controllers;
 
 import DAO.OrderFacade;
+import DAO.WalletFacade;
 import entity.Cart;
 import entity.Item;
 import entity.OrderDetails;
@@ -31,7 +32,7 @@ import javax.servlet.http.HttpSession;
 
 /**
  *
- * @author VINH HIEN
+ * @author TLStore
  */
 @WebServlet(name = "OrderController", urlPatterns = {"/order"})
 public class OrderController extends HttpServlet {
@@ -125,11 +126,56 @@ public class OrderController extends HttpServlet {
         }
 
         try {
-            ordersFacade.createOrder(order, orderDetails, payment, shipping);
-            session.removeAttribute("cart");
-            request.getRequestDispatcher("/product/index.do?success=true").forward(request, response);
+            // Check QR Payment balance FIRST (before creating order)
+            if ("QR Payment".equals(paymentMethod)) {
+                WalletFacade wf = new WalletFacade();
+                // Check if user has enough balance
+                boolean hasEnoughBalance = wf.deductMoney(user.getUserID(), cart.getTotal());
+                
+                if (!hasEnoughBalance) {
+                    // Insufficient balance - redirect back with error
+                    session.setAttribute("paymentError", "insufficient");
+                    response.sendRedirect(request.getContextPath() + "/product/checkout.do?paymentError=insufficient");
+                    return;
+                }
+                
+                // Deduction successful, but need to rollback if order creation fails
+                try {
+                    payment.setPaymentStatus("Paid");
+                    ordersFacade.createOrder(order, orderDetails, payment, shipping);
+                    
+                    // Order created successfully - clear cart and redirect with success
+                    session.removeAttribute("cart");
+                    response.sendRedirect(request.getContextPath() + "/product/index.do?paymentSuccess=true");
+                    
+                } catch (SQLException orderException) {
+                    // Order creation failed - REFUND the money back to wallet
+                    System.out.println("=============== ORDER CREATION ERROR ===============");
+                    System.out.println("Error Message: " + orderException.getMessage());
+                    System.out.println("SQL State: " + orderException.getSQLState());
+                    System.out.println("Error Code: " + orderException.getErrorCode());
+                    orderException.printStackTrace();
+                    System.out.println("===================================================");
+                    
+                    wf.addMoney(user.getUserID(), cart.getTotal());
+                    
+                    session.setAttribute("paymentError", "failed");
+                    response.sendRedirect(request.getContextPath() + "/product/checkout.do?paymentError=failed");
+                }
+                
+            } else {
+                // Other payment methods - create order without deducting wallet
+                payment.setPaymentStatus("Pending");
+                ordersFacade.createOrder(order, orderDetails, payment, shipping);
+                session.removeAttribute("cart");
+                response.sendRedirect(request.getContextPath() + "/product/index.do?success=true");
+            }
+            
         } catch (SQLException e) {
             e.printStackTrace();
+            // Payment failed - redirect with error
+            session.setAttribute("paymentError", "failed");
+            response.sendRedirect(request.getContextPath() + "/product/checkout.do?paymentError=failed");
         }
     }
 
@@ -150,45 +196,43 @@ public class OrderController extends HttpServlet {
     protected void revenue(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");// Ngày được chọn
-            // Lấy ngày từ request, nếu null hoặc rỗng thì không xử lý
-            String dailyParam = request.getParameter("dailyRevenue");
-            String monthlyParam = request.getParameter("monthlyRevenue");
-            String yearlyParam = request.getParameter("yearlyRevenue");
-            String weeklyParam = request.getParameter("weeklyRevenue");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            
+            // Lấy ngày được chọn
+            String selectedDateParam = request.getParameter("selectedDate");
             
             OrderFacade orderFacade = new OrderFacade();
 
-            double dailyRevenue = 0;
-            double monthlyRevenue = 0;
-            double yearlyRevenue = 0;
-            List<Double> weeklyRevenue = new ArrayList<>();
-            if (dailyParam != null && !dailyParam.isEmpty()) {
-                Date date = sdf.parse(dailyParam);
-                dailyRevenue = orderFacade.getDailyRevenue(date);
+            if (selectedDateParam != null && !selectedDateParam.isEmpty()) {
+                Date selectedDate = sdf.parse(selectedDateParam);
+                
+                // Lấy doanh thu của ngày được chọn
+                double dailyRevenue = orderFacade.getDailyRevenue(selectedDate);
+                
+                // Lấy doanh thu 7 ngày (bao gồm ngày được chọn và 6 ngày trước đó)
+                List<Double> weeklyRevenue = orderFacade.getWeeklyRevenue(selectedDate);
+                List<String> weeklyLabels = orderFacade.getWeeklyLabels(selectedDate);
+                
+                // Convert to JSON string
+                StringBuilder revenueJson = new StringBuilder("[");
+                for (int i = 0; i < weeklyRevenue.size(); i++) {
+                    if (i > 0) revenueJson.append(",");
+                    revenueJson.append(weeklyRevenue.get(i));
+                }
+                revenueJson.append("]");
+                
+                StringBuilder labelsJson = new StringBuilder("[");
+                for (int i = 0; i < weeklyLabels.size(); i++) {
+                    if (i > 0) labelsJson.append(",");
+                    labelsJson.append("\"").append(weeklyLabels.get(i)).append("\"");
+                }
+                labelsJson.append("]");
+                
+                // Đặt thuộc tính vào request
+                request.setAttribute("dailyRevenue", dailyRevenue);
+                request.setAttribute("weeklyRevenueJson", revenueJson.toString());
+                request.setAttribute("weeklyLabelsJson", labelsJson.toString());
             }
-
-            if (monthlyParam != null && !monthlyParam.isEmpty()) {
-                Date month = sdf.parse(monthlyParam);
-                monthlyRevenue = orderFacade.getMonthlyRevenue(month);
-            }
-
-            if (yearlyParam != null && !yearlyParam.isEmpty()) {
-                Date year = sdf.parse(yearlyParam);
-                yearlyRevenue = orderFacade.getYearlyRevenue(year);
-            }
-            // Lấy doanh thu 7 ngày gần nhất
-            if (weeklyParam != null && !weeklyParam.isEmpty()) {
-            Date weeklyDate = sdf.parse(weeklyParam);
-            weeklyRevenue = orderFacade.getWeeklyRevenue(weeklyDate);
-        }
-            
-           
-            // Đặt thuộc tính vào request
-            request.setAttribute("dailyRevenue", dailyRevenue);
-            request.setAttribute("monthlyRevenue", monthlyRevenue);
-            request.setAttribute("yearlyRevenue", yearlyRevenue);
-            request.setAttribute("weeklyRevenue", weeklyRevenue);
 
         } catch (Exception e) {
             e.printStackTrace();

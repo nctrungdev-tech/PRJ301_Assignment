@@ -6,9 +6,8 @@
         <!-- row -->
         <div class="col-md-12">
             <div class="col-md-6">
-<img src="${pageContext.request.contextPath}/${product.imageURL}" 
-     alt="${product.name}" 
-     style="width: 100%; height: 300px; object-fit: contain;">
+                                            <img src="<c:url value='${product.imageURL}' />" style="height: 263px; width: 263px" alt="">
+
 
 
             </div>

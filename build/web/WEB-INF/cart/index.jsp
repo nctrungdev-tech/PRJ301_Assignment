@@ -64,11 +64,11 @@
         cursor: pointer;
     }
     .btn-update {
-        background-color: #744DA9;
+        background-color: #FFA500; /* Đã đổi sang cam */
         color: white;
     }
     .btn-update:hover {
-        background-color: #744DA9;
+        background-color: #E69500; /* Đổi sang cam đậm */
     }
     .btn-delete {
         background-color: #000;
@@ -97,10 +97,10 @@
         background-color: #333;
     }
     .btn-checkout {
-        background-color: #744DA9;
+        background-color: #FFA500; /* Đã đổi sang cam */
     }
     .btn-checkout:hover {
-        background-color: #744DA9;
+        background-color: #E69500; /* Đổi sang cam đậm */
     }
     .cart-table input[type="number"] {
         width: 60px;
@@ -126,7 +126,7 @@
             <th>No.</th>
             <th>Image</th>
             <th>Id</th>
-            <th>Name</th>   
+            <th>Name</th>    
             <th style="text-align: right;">Price</th>
             <th style="text-align: right;">Quantity</th>
             <th style="text-align: right;">Cost</th>
@@ -135,20 +135,17 @@
         <c:forEach items="${cart.items}" var="item" varStatus="loop">
             <tr>
                 <td>${loop.index + 1}</td>
-                <td><img src="${pageContext.request.contextPath}/${product.imageURL}" 
-     alt="${product.name}" 
-     style="width: 100%; height: 300px; object-fit: contain;">
-</td>
+                <td><img src="<c:url value="${item.product.imageURL}"/>" height="100px" width="150px"/></td>
                 <td>${item.id}</td>
                 <td>${item.product.name}</td>
                 <td style="text-align: right;">
-                    <fmt:formatNumber value="${item.product.newPrice}" type="currency"/>
+                    <fmt:formatNumber value="${item.product.newPrice}" type="number" groupingUsed="true"/> USD
                 </td>
                 <td style="text-align: right;">
                     <input type="number" min="0" name="quantity" value="${item.quantity}" />
                 </td>
                 <td style="text-align: right;">
-                    <fmt:formatNumber value="${item.cost}" type="currency"/>
+                    <fmt:formatNumber value="${item.cost}" type="number" groupingUsed="true"/> USD
                 </td>
                 <td>
                     <a href="#" class="btn-action btn-update update" data-id="${item.id}">
@@ -163,7 +160,7 @@
         <tr class="total-row">
             <td colspan="6" class="total-label">Total</td>
             <td style="text-align: right;">
-                <fmt:formatNumber value="${cart.total}" type="currency"/>
+                <fmt:formatNumber value="${cart.total}" type="number" groupingUsed="true"/> USD
             </td>
             <td>
                 <a href="<c:url value='/cart/empty.do'/>" class="btn-cart btn-empty">Empty Cart</a>
@@ -179,7 +176,7 @@
     $(".update").click(function(){
         var id = $(this).data("id");
         var quantity = $(this).closest("tr").find("input[name='quantity']").val();
-        var url = `<c:url value="/cart/update.do?id=\${id}&quantity=\${quantity}" />`;
+        var url = `<cV:url value="/cart/update.do?id=\${id}&quantity=\${quantity}" />`;
         window.location = url;
     });
 </script>

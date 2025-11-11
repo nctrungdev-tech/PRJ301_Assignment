@@ -12,9 +12,8 @@
                     <div class="col-md-4 col-xs-6">
                         <div class="product">
                             <div class="product-img">
-<img src="${pageContext.request.contextPath}/${product.imageURL}" 
-     alt="${product.name}" 
-     style="width: 100%; height: 300px; object-fit: contain;">
+                                            <img src="<c:url value='${product.imageURL}' />" style="height: 263px; width: 263px" alt="">
+
 
                                 <div class="product-label">
                                     <span class="sale">${product.discount}%</span>

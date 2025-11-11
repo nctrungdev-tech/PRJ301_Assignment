@@ -25,7 +25,7 @@ import javax.servlet.http.HttpSession;
 
 /**
  *
- * @author VINH HIEN
+ * @author TLStore
  */
 @WebServlet(name = "ProductController", urlPatterns = {"/product"})
 public class ProductController extends HttpServlet {
@@ -64,9 +64,6 @@ public class ProductController extends HttpServlet {
                 break;
             case "store_handler":
                 store_handler(request, response);
-                break;
-            case "hotDeals":
-                hotDeals(request, response);
                 break;
             case "price":
                 price(request, response);
@@ -216,38 +213,6 @@ public class ProductController extends HttpServlet {
         request.setAttribute("selectedCategories", selectedCategories);
         request.getRequestDispatcher("/product/store.do").forward(request, response);
     }
-
-    protected void hotDeals(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            int page_size = 6;
-            //lấy số trang 
-            HttpSession session = request.getSession();
-            Integer page = (Integer) session.getAttribute("page");
-            String spage = request.getParameter("page");
-            if (spage != null) {
-                page = Integer.parseInt(spage);
-                session.setAttribute("page", page);
-            }
-            //doc table Toy
-            ProductFacade pf = new ProductFacade();
-            int row_count = pf.count();
-            List<Products> list = pf.select(page);
-            //tính total_pages
-            int total_pages = (int) Math.ceil(row_count / page_size);
-            request.setAttribute("total_page", total_pages);
-            //luu list vao request
-            request.setAttribute("list", list);
-            //cho hien view /toy.jsp
-            request.getRequestDispatcher(Config.LAYOUT).forward(request, response);
-
-        } catch (SQLException ex) {
-            //in chi tiet ngoai le
-            ex.printStackTrace();
-
-        }
-    }
-   
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.

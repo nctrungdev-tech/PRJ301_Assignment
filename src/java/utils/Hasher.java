@@ -11,7 +11,7 @@
 
     /**
      *
-     * @author VINH HIEN
+     * @author TLStore
      */
     public class Hasher {
             public static String hash(String password) throws NoSuchAlgorithmException {

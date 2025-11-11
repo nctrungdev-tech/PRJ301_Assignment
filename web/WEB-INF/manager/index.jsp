@@ -37,7 +37,7 @@
         margin-bottom: 15px;
     }
     .btn-create {
-        background-color: #744DA9;
+        background-color: #FFA500; /* Đã đổi sang cam */
         color: white;
         padding: 10px 15px;
         border: none;
@@ -46,7 +46,7 @@
         cursor: pointer;
     }
     .btn-create:hover {
-        background-color: #744DA9;
+        background-color: #E69500; /* Đổi sang cam đậm */
     }
     .btn-action {
         display: inline-block;
@@ -60,7 +60,7 @@
         line-height: 36px;
     }
     .btn-update {
-        background-color: #744DA9;
+        background-color: #FFA500; /* Đã đổi sang cam */
         color: white;
         border-radius: 4px;
         display: inline-flex;
@@ -68,7 +68,7 @@
         justify-content: center;
     }
     .btn-update:hover {
-        background-color: #744DA9;
+        background-color: #E69500; /* Đổi sang cam đậm */
     }
     .btn-delete {
         background-color: #000;
@@ -107,10 +107,9 @@
         <c:forEach items="${list}" var="product" varStatus="loop">
             <tr>
                 <td>${loop.index + 1}</td>
-                <td><img src="${pageContext.request.contextPath}/${product.imageURL}" 
-     alt="${product.name}" 
-     style="width: 100%; height: 300px; object-fit: contain;">
-</td>
+                <td>
+                    <img src="<c:url value='${product.imageURL}' />" style="height: 263px; width: 263px" alt="">
+                </td>
                 <td>${product.productID}</td>
                 <td>${product.name}</td>
                 <td>${product.description}</td>

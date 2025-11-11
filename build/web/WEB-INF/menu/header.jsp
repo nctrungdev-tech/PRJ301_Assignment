@@ -4,25 +4,29 @@
 <fmt:setLocale value="en_US" scope="session"/>
 <div class="header sticky-top">
     <header >
-        <!-- TOP HEADER -->
         <div id="top-header">
             <div class="container">
                 <ul class="header-links pull-left">
-                    <li><a><i class="fa fa-phone"></i> 0325 029 045</a></li>
-                    <li><a><i class="fa fa-envelope-o"></i> donglhlse185081@fpt.edu.vn</a></li>
-                    <li><a><i class="fa fa-map-marker"></i> The Origami S9.03, Vinhomes Grand Park, Phuoc Thien St, Long Binh precinct, Thu Duc City</a></li>
+                    <li><a><i class="fa fa-phone"></i> 0932 602 645</a></li>
+                    <li><a><i class="fa fa-envelope-o"></i> hoadoan.2111990@gmail.com</a></li>
+                    <li><a><i class="fa fa-map-marker"></i> 140 Dien Bien Phu Street, Ward 17, Binh Thanh District, Ho Chi Minh City</a></li>
                 </ul>
                 <ul class="header-links pull-right">
-                    <li><a href="#"><i class="fa fa-dollar"></i> USD</a></li>
+                    <c:if test="${user != null}">
+                        <li><a href="#" data-toggle="modal" data-target="#walletModal"><i class="fa fa-wallet"></i> Wallet</a></li>
+                    </c:if>
+                    <c:if test="${user == null}">
+                        <li><a href="#"><i class="fa fa-dollar"></i> USD</a></li>
+                    </c:if>
                     <c:if test="${user != null}">                    
                         <li class="dropdown">
                             <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" style="color: white;" href="">
                                 <i class="fa fa-user-o"></i>
                                 <span>${user.fullName}</span>                        
                             </a>
-                            <div class="cart-dropdown">                      
+                            <div class="cart-dropdown">                       
                                 <h4><i class="fa fa-eye" aria-hidden="true"></i>View profile or logout <i class="fa fa-sign-out" aria-hidden="true"></i></h4>
-                                <div class="cart-btns">                           
+                                <div class="cart-btns">                            
                                     <a href="<c:url value='/user/editProfile.do' />">View User</a>
                                     <a href="<c:url value='/user/logout.do' />"> Logout <i class="fa fa-arrow-circle-right"></i></a>
                                 </div>
@@ -37,27 +41,16 @@
                 </ul>
             </div>
         </div>
-        <!-- /TOP HEADER -->
-
-        <!-- MAIN HEADER -->
         <div id="header">
-            <!-- container -->
             <div class="container">
-                <!-- row -->
                 <div class="row">
-                    <!-- LOGO -->
                     <div class="col-md-3">
                         <div class="header-logo">
                             <a href="<c:url value="/product/index.do" />" class="logo">
-                                <img src="<c:url value='/img/logoX2.png' />" alt=""
-                                     style="max-height:100px; width:auto; display:block; margin:0 auto; object-fit:contain;">
-
+                                <img src="<c:url value='/img/logoX2.png' />" alt="">
                             </a>
                         </div>
                     </div>
-                    <!-- /LOGO -->
-
-                    <!-- SEARCH BAR -->
                     <div class="col-md-6">
 
                         <div class="header-search">
@@ -74,12 +67,8 @@
                             </form>
                         </div>
                     </div>
-                    <!-- /SEARCH BAR -->
-
-                    <!-- ACCOUNT -->
                     <div class="col-md-3 clearfix">
                         <div class="header-ctn">
-                            <!-- Wishlist -->
                             <div class="dropdown">
                                 <a href="" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
                                     <i id="wishlist-icon" class="bi ${cartWish.count > 0 ? 'bi-heart-fill' : 'bi-heart'}"></i>
@@ -92,7 +81,6 @@
                                             <div class="product-widget">
                                                 <div class="product-img">
                                                     <img src="<c:url value='${item.product.imageURL}' />" alt="">
-
                                                 </div>
                                                 <div class="product-body">
                                                     <h3 class="product-name"><a href="<c:url value="/product/product.do?id=${item.product.productID}"/>">${item.product.name}</a></h3>
@@ -105,9 +93,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- /Wishlist -->
-
-                            <!-- Cart -->
                             <div class="dropdown">
                                 <a href="" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
                                     <i id="cart-icon" class="bi ${cart.totalQuantity > 0 ? 'bi-cart-fill' : 'bi-cart'}"></i>
@@ -121,7 +106,6 @@
                                             <div class="product-widget">
                                                 <div class="product-img">
                                                     <img src="<c:url value='${item.product.imageURL}' />" alt="">
-
                                                 </div>
                                                 <div class="product-body">
                                                     <h3 class="product-name"><a href="<c:url value="/product/product.do?id=${item.product.productID}"/>">${item.product.name}</a></h3>
@@ -130,9 +114,8 @@
 
                                             </div>
                                         </c:forEach>
-
-                                        <!--                                    
-                                        -->                                </div>
+                                        
+                                    </div>
                                     <div class="cart-summary">
                                         <small>${cart.count} Item(s) selected</small>
                                         <h5><fmt:formatNumber value="${cart.total}" type="currency"/> </h5>
@@ -142,43 +125,29 @@
                                         <a href="<c:url value="/product/checkout.do" />">Checkout  <i class="fa fa-arrow-circle-right"></i></a>
                                     </div>
                                 </div>
-                            </div><!--
-                            <!-- /Cart -->
-
-                            <!-- Menu Toogle -->
-                            <div class="menu-toggle">
+                            </div><div class="menu-toggle">
                                 <a href="#">
                                     <i class="fa fa-bars"></i>
                                     <span>Menu</span>
                                 </a>
                             </div>
-                            <!-- /Menu Toogle -->
-                        </div>
+                            </div>
                     </div>
-                    <!-- /ACCOUNT -->
+                    </div>
                 </div>
-                <!-- row -->
             </div>
-            <!-- container -->
-        </div>
-        <!-- /MAIN HEADER -->
-    </header>
-    <!-- /HEADER -->
-</div>
-<!-- NAVIGATION -->
+        </header>
+    </div>
 <nav id="navigation">
-    <!-- container -->
     <div class="container">
-        <!-- responsive-nav -->
         <div id="responsive-nav">
-            <!-- NAV -->
             <ul class="main-nav nav navbar-nav" >
 
                 <li class="">
-                    <a href="<c:url value='/index.jsp'/>">Home</a>
+                    <a href="<c:url value='/index.do'/>">Home</a>
                 </li>
                 <li><a href="<c:url value='/product/store.do'/>">Store</a></li>
-                <li><a href="<c:url value='/product/hotDeals.do'/>">Hot Deals</a></li>
+
                 <li class="">
                     <a href="<c:url value='/product/category.do?categoryId=1'/>">Laptops</a>
                 </li>
@@ -205,14 +174,10 @@
 
 
 
-            <!-- /NAV -->
+            </div>
         </div>
-        <!-- /responsive-nav -->
-    </div>
-    <!-- /container -->
-</nav>
+    </nav>
 
-<!-- /NAVIGATION -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         var qtyElement = document.getElementById("wishlist-quantity");
@@ -232,4 +197,68 @@
             qtyElement.style.display = "none"; // Ẩn phần tử nếu không có số
         }
     });
+
+    // Top-up money function
+    function topUpWallet() {
+        var amount = document.getElementById('topUpAmount').value;
+        if (amount && amount >= 1000) {
+            var btn = document.querySelector('button[onclick="topUpWallet()"]');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Processing...';
+
+            fetch('<c:url value="/user/wallet.do?action=topup&amount="/>' + amount, {
+                method: 'POST'
+            }).then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('✅ Top-up Successful!\n\nAmount: ' + new Intl.NumberFormat('vi-VN').format(amount) + ' USD\nYour wallet has been updated.');
+                            location.reload();
+                        } else {
+                            alert('❌ Top-up Failed!\n\nPlease try again or contact support.');
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="fa fa-plus-circle"></i> Add Money';
+                        }
+                    }).catch(error => {
+                alert('❌ Error Occurred!\n\nPlease check your connection and try again.');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa fa-plus-circle"></i> Add Money';
+            });
+        } else {
+            alert('⚠️ Invalid Amount!\n\nPlease enter a valid amount (minimum 1,000 USD).');
+        }
+    }
 </script>
+
+<div class="modal fade" id="walletModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #D10024; color: white;">
+                <button type="button" class="close" data-dismiss="modal" style="color: white;">&times;</button>
+                <h4 class="modal-title"><i class="fa fa-wallet"></i> My Wallet</h4>
+            </div>
+            <div class="modal-body text-center">
+                <div style="margin-bottom: 20px;">
+                    <img src="<c:url value='/img/maqr.png'/>" alt="QR Code" style="width: 200px; height: 200px; border: 2px solid #ddd; padding: 10px;">
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <h5 style="color: #666;">Current Balance</h5>
+                    <h2 style="color: #D10024; font-weight: bold;">
+                        <fmt:formatNumber value="${wallet.balance}" type="number" groupingUsed="true"/> USD
+                    </h2>
+                </div>
+
+                <div style="border-top: 1px solid #ddd; padding-top: 20px;">
+                    <h5 style="margin-bottom: 15px;">Top-up Money</h5>
+                    <div class="input-group" style="max-width: 300px; margin: 0 auto 15px;">
+                        <input type="number" id="topUpAmount" class="form-control" placeholder="Enter amount (USD)" min="1000" step="1000">
+                        <span class="input-group-addon">USD</span>
+                    </div>
+                    <button onclick="topUpWallet()" class="primary-btn" style="padding: 10px 30px;">
+                        <i class="fa fa-plus-circle"></i> Add Money
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

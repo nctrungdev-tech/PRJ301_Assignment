@@ -1,11 +1,15 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%-- Ở đầu trang index.jsp --%>
+<%-- Payment/Order Success Messages --%>
 <% if ("true".equals(request.getParameter("success"))) { %>
 <script>
-    alert("Đặt hàng thành công!");
+    alert("✅ Order Placed Successfully!\n\nYour order has been placed successfully.\nThank you for shopping with us!");
 </script>
-<% }%>
+<% } else if ("true".equals(request.getParameter("paymentSuccess"))) { %>
+<script>
+    alert("✅ Payment Successful!\n\nYour order has been placed and paid successfully.\nAmount deducted from your wallet.\nThank you for shopping with us!");
+</script>
+<% } %>
 <!-- SECTION -->
 <div class="section">
     <!-- container -->

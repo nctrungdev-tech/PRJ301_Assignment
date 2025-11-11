@@ -6,11 +6,9 @@
         <!-- row -->
         <div class="col-md-12">
             <div class="col-md-6">
-<<<<<<< HEAD
-                <img src="<c:url value='${product.imageURL}' />" style="height: 281px; width: 400px" alt="">
-=======
-<img src="<c:url value='/${product.imageURL}'/>" alt="${product.name}">
->>>>>>> recovery
+                                            <img src="<c:url value='${product.imageURL}' />" style="height: 263px; width: 263px" alt="">
+
+
 
             </div>
             <div class="col-md-6">

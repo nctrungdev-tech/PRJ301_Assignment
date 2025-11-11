@@ -7,7 +7,7 @@ package controllers;
 
 /**
  *
- * @author VINH HIEN
+ * @author TLStore
  */
 public class Config {
     public static String LAYOUT = "/WEB-INF/layouts/main.jsp";

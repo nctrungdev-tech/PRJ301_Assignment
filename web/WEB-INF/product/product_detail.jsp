@@ -5,11 +5,9 @@
 <div class="container mt-5">
     <div class="row">
         <div class="col-md-6">
-<<<<<<< HEAD
-            <img src="<c:url value='${product.imageURL}'/>" alt="${product.name}" class="img-fluid rounded shadow">
-=======
-<img src="<c:url value='/${product.imageURL}'/>" alt="${product.name}">
->>>>>>> recovery
+                                            <img src="<c:url value='${product.imageURL}' />" style="height: 263px; width: 263px" alt="">
+
+
         </div>
         <div class="col-md-6">
             <h2>${product.name}</h2>
@@ -35,7 +33,8 @@
         <c:forEach var="r" items="${related}">
             <div class="col-md-3 mb-4">
                 <div class="card h-100">
-                    <img src="<c:url value='${r.imageURL}'/>" class="card-img-top" style="height:200px;object-fit:cover;">
+                                                               <img src="<c:url value='${product.imageURL}' />" style="height: 263px; width: 263px" alt="">
+
                     <div class="card-body text-center">
                         <h6>${r.name}</h6>
                         <p><fmt:formatNumber value="${r.price}" type="currency"/></p>

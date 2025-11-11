@@ -109,11 +109,10 @@
                         <c:forEach var="product" items="${list1}">
                             <div class="product-widget">
                                 <div class="product-img">
-<<<<<<< HEAD
-                                    <img src="<c:url value='${product.imageURL}' />" alt="">
-=======
-<img src="<c:url value='/${product.imageURL}'/>" alt="${product.name}">
->>>>>>> recovery
+                                            <img src="<c:url value='${product.imageURL}' />" style="height: 263px; width: 263px" alt="">
+
+
+
                                 </div>
                                 <div class="product-body">
 
@@ -135,7 +134,8 @@
                             <div class="col-md-4 col-xs-6">
                                 <div class="product">
                                     <div class="product-img">
-                                        <img src="<c:url value='${product.imageURL}' />" style="height: 202.5px; width: 232.5px" alt="">
+                                            <img src="<c:url value='${product.imageURL}' />" style="height: 263px; width: 263px" alt="">
+
                                         <div class="product-label">
                                             <span class="sale">${product.discount}%</span>
                                         </div>

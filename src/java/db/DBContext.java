@@ -11,7 +11,7 @@ import java.sql.SQLException;
 
 /**
  *
- * @author VINH HIEN
+ * @author TLStore
  */
 public class DBContext {
     public static Connection getConnection() throws SQLException{

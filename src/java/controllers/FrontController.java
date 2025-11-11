@@ -5,8 +5,10 @@
  */
 package controllers;
 
+import DAO.WalletFacade;
 import entity.Cart;
 import entity.Users;
+import entity.Wallet;
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
@@ -18,7 +20,7 @@ import javax.servlet.http.HttpSession;
 
 /**
  *
- * @author VINH HIEN
+ * @author TLStore
  */
 @WebServlet(name = "FrontController", urlPatterns = {"*.do"})
 public class FrontController extends HttpServlet {
@@ -60,9 +62,22 @@ public class FrontController extends HttpServlet {
         Users user =(Users) session.getAttribute("user");
         if (user != null) {
             session.setAttribute("user", user);
+            // Load wallet for user
+            try {
+                WalletFacade wf = new WalletFacade();
+                Wallet wallet = wf.getWalletByUserId(user.getUserID());
+                if (wallet == null) {
+                    // Create wallet if not exists
+                    wf.createWallet(user.getUserID());
+                    wallet = wf.getWalletByUserId(user.getUserID());
+                }
+                session.setAttribute("wallet", wallet);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         //chuyển request & respone cho controller tương ứng
-        request.getRequestDispatcher(controller).forward(request, response);
+request.getRequestDispatcher(controller).forward(request, response);
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

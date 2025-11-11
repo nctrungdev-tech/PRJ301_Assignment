@@ -16,11 +16,11 @@
                 <div class="col-md-3 col-xs-6">
                     <div class="footer">
                         <h3 class="footer-title">About Us</h3>
-                        <p>TechX provides genuine devices, supporting efficient retail operations.</p>
+                        <p>TL Store provides genuine devices, supporting efficient retail operations.</p>
                         <ul class="footer-links">
-                            <li><a><i class="fa fa-map-marker"></i>The Origami S9.03, Vinhomes Grand Park, Phuoc Thien St, Long Binh precinct, Thu Duc City</a></li>
-                            <li><a><i class="fa fa-phone"></i>0325 029 045</a></li>
-                            <li><a><i class="fa fa-envelope-o"></i>donglhlse185081@fpt.edu.vn</a></li>
+                            <li><a><i class="fa fa-map-marker"></i>140 Dien Bien Phu Street, Ward 17, Binh Thanh District, Ho Chi Minh City</a></li>
+                            <li><a><i class="fa fa-phone"></i>0932 602 645</a></li>
+                            <li><a><i class="fa fa-envelope-o"></i>hoadoan.2111990@gmail.com</a></li>
                         </ul>
                     </div>
                 </div>

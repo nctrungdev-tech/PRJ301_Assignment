@@ -9,7 +9,7 @@ import java.util.Date;
 
 /**
  *
- * @author VINH HIEN
+ * @author TLStore
  */
 public class Payments {
     private int paymentID;

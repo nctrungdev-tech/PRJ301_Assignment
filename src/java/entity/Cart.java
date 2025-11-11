@@ -12,7 +12,7 @@ import java.util.Map;
 
 /**
  *
- * @author VINH HIEN
+ * @author TLStore
  */
 public class Cart {
     private int totalQuantity;
